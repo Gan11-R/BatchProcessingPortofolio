@@ -121,6 +121,6 @@ class LoadToAzureSql():
                                                    password=self.password,
                                                    table_name=self.table_name)
                 # If there are no blob files that contain data newer than the data in the table, exit the loop
-                except:
+                except IndexError:
                     print('all data in blob uploaded')
                     break
