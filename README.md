@@ -62,4 +62,4 @@ Python code is run once a month on day 11 using file [taxi_dag.py.](https://gith
 Scheduling using apache airflow which is installed locally due to lack of resources, so the data may not be updated.
 
 
-NB: Python code is written based on OOP best practices
+*NB: Python code is written based on OOP best practices
