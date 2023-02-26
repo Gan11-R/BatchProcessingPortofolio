@@ -11,7 +11,7 @@ The Yellow Taxi Trip Records dataset is a collection of data about yellow taxi t
 Sample Dataset:
 
 |VendorID|tpep_pickup_datetime|tpep_dropoff_datetime|passenger_count|trip_distance|RatecodeID|store_and_fwd_flag|PULocationID|DOLocationID|payment_type|fare_amount|extra|mta_tax|tip_amount|tolls_amount|improvement_surcharge|total_amount|congestion_surcharge|airport_fee|
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 |1|2022-01-01 00:35:40.000|2022-01-01 00:53:29.000|2|3,8|1|N|142|236|1|14,5|3|0,5|3,65|0|0,3|21,95|2,5|0|
 |1|2022-01-01 00:33:43.000|2022-01-01 00:42:07.000|1|2,1|1|N|236|42|1|8|0,5|0,5|4|0|0,3|13,3|0|0|
 |2|2022-01-01 00:53:21.000|2022-01-01 01:02:19.000|1|0,97|1|N|166|166|1|7,5|0,5|0,5|1,76|0|0,3|10,56|0|0|
@@ -39,8 +39,9 @@ Data is retrieved from blob storage using pyspark, then transforms by adding the
  - Format the day of the week and month name columns.
  
 Additional column after the transformation process:
+
 |trip_duration_minutes|year|month|day_of_week|day_name|month_name|quarter|
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+|---|---|---|---|---|---|---|
 |17,816666666666666|2022|1|7|Saturday|January|1|
 |8,4|2022|1|7|Saturday|January|1|
 |8,966666666666667|2022|1|7|Saturday|January|1|
