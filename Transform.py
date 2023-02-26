@@ -168,4 +168,3 @@ class PysparkProcessing():
 
         # If the write operation is successful, commit the transaction
         print("Data successfully Uploaded to database.")
-        
