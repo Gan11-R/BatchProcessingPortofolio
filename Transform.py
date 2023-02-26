@@ -60,7 +60,7 @@ class PysparkProcessing():
         # Generate a SAS token with read permission for the parquet file
         sas_i = generate_blob_sas(account_name=account_name,
                                   container_name=container_name,
-                                  file_name=file_name,
+                                  blob_name=file_name,
                                   account_key=blob_account_key,
                                   permission=BlobSasPermissions(read=True),
                                   expiry=datetime.now() + timedelta(hours=hours_expiry))

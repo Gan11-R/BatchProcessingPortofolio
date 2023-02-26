@@ -1,7 +1,6 @@
 from Transform import PysparkProcessing
 import pymssql
 
-
 class LoadToAzureSql():
 
     def __init__(self, server, database, username, password, table_name):
