@@ -40,11 +40,11 @@ class LoadToAzureSql():
         """
 
         # Connect to the database
-        conn = pymssql.connect(self.server, self.username,
+        self.conn = pymssql.connect(self.server, self.username,
                                self.password, self.database)
-
+        self.conn.autocommit(False)
         # Create a cursor
-        cursor = conn.cursor()
+        cursor = self.conn.cursor()
 
         # Execute a SQL query to get the maximum date in a table
         query = f'SELECT MAX(tpep_pickup_datetime) FROM {self.table_name}'
@@ -52,9 +52,6 @@ class LoadToAzureSql():
 
         # Fetch the result
         last_data = cursor.fetchone()[0]
-
-        # close
-        conn.close()
 
         return last_data
 
@@ -89,12 +86,20 @@ class LoadToAzureSql():
                                                     file_name=file)
                 # Preprocess the PySpark DataFrame
                 self.pyspark.df_preprocessing()
-                # Load the preprocessed PySpark DataFrame to the Azure SQL table
-                self.pyspark.load_to_azure_sql(server=self.server,
-                                               database=self.database,
-                                               username=self.username,
-                                               password=self.password,
-                                               table_name=self.table_name)
+                try:
+                    # Load the preprocessed PySpark DataFrame to the Azure SQL table
+                    self.pyspark.load_to_azure_sql(server=self.server,
+                                                database=self.database,
+                                                username=self.username,
+                                                password=self.password,
+                                                table_name=self.table_name)
+                except Exception as e:
+                    # Roll back the transaction (in case of an error)
+                    self.conn.rollback()
+                    print(f"Error occurred: {e}")
+                finally:
+                    # Close the connection
+                    self.conn.close()
         else:
             # If there is data in the Azure SQL table,
             # load only the blob files that contain data newer than the data in the table
@@ -113,12 +118,20 @@ class LoadToAzureSql():
                                                         file_name=file_not_inserted)
                     # Preprocess the PySpark DataFrame
                     self.pyspark.df_preprocessing()
-                    # Load the preprocessed PySpark DataFrame to the Azure SQL table
-                    self.pyspark.load_to_azure_sql(server=self.server,
-                                                   database=self.database,
-                                                   username=self.username,
-                                                   password=self.password,
-                                                   table_name=self.table_name)
+                    try:
+                        # Load the preprocessed PySpark DataFrame to the Azure SQL table
+                        self.pyspark.load_to_azure_sql(server=self.server,
+                                                    database=self.database,
+                                                    username=self.username,
+                                                    password=self.password,
+                                                    table_name=self.table_name)
+                    except Exception as e:
+                        # Roll back the transaction (in case of an error)
+                        self.conn.rollback()
+                        print(f"Error occurred: {e}")
+                    finally:
+                        # Close the connection
+                        self.conn.close()
                 # If there are no blob files that contain data newer than the data in the table, exit the loop
                 except IndexError:
                     print('all data in blob uploaded')

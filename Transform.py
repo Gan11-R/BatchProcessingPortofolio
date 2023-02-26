@@ -163,15 +163,9 @@ class PysparkProcessing():
 
         # Write the data to the database
         print("Data Uploading in Process")
-        try:
-            self.df.write.jdbc(url=jdbc_url, table=table_name,
-                               mode="append", properties=properties)
+        self.df.write.jdbc(url=jdbc_url, table=table_name,
+                           mode="append", properties=properties)
 
-            # If the write operation is successful, commit the transaction
-            self.spark.sql("COMMIT")
-            print("Data successfully Uploaded to database.")
-        except Exception as e:
-            # If there's an error, rollback the transaction
-            self.spark.sql("ROLLBACK")
-            print(
-                "Failed to upload data to database. Transaction rolled back. Error message: ", e)
+        # If the write operation is successful, commit the transaction
+        print("Data successfully Uploaded to database.")
+        
