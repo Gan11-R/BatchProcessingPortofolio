@@ -151,6 +151,6 @@ class LoadToAzureSql():
                 except Exception as e:
                     print(f"Error occurred: {e}")
             # If there are no blob files that contain data newer than the data in the table, exit the loop
-            except :
-                print('all data in blob uploaded')
+            except Exception as e:
+                print(f'all data in blob uploaded, {0}')
                 break
