@@ -42,54 +42,56 @@ class LoadToAzureSql():
         # Connect to the database
         self.conn = pymssql.connect(self.server, self.username,
                                self.password, self.database)
-        self.conn.autocommit(False)
-        # Create a cursor
-        cursor = self.conn.cursor()
+        
+        with self.conn:
+            self.conn.autocommit(False)
+            # Create a cursor
+            cursor = self.conn.cursor()
 
-        # Check if the table exists
-        query = f"SELECT COUNT(*) FROM sys.tables WHERE name = '{self.table_name}'"
-        cursor.execute(query)
-        if cursor.fetchone()[0] == 0:
-            # Table doesn't exist, create it
-            query = f"""
-            CREATE TABLE {self.table_name} (
-                VendorID INT,
-                tpep_pickup_datetime DATETIME,
-                tpep_dropoff_datetime DATETIME,
-                passenger_count FLOAT,
-                trip_distance FLOAT,
-                RatecodeID FLOAT,
-                store_and_fwd_flag VARCHAR(1),
-                PULocationID INT,
-                DOLocationID INT,
-                payment_type INT,
-                fare_amount FLOAT,
-                extra FLOAT,
-                mta_tax FLOAT,
-                tip_amount FLOAT,
-                tolls_amount FLOAT,
-                improvement_surcharge FLOAT,
-                total_amount FLOAT,
-                congestion_surcharge FLOAT,
-                airport_fee FLOAT,
-                trip_duration_minutes FLOAT,
-                year INT,
-                month INT,
-                day_of_week INT,
-                day_name VARCHAR(10),
-                month_name VARCHAR(10),
-                quarter INT
-            );
-            """
+            # Check if the table exists
+            query = f"SELECT COUNT(*) FROM sys.tables WHERE name = '{self.table_name}'"
             cursor.execute(query)
-            self.conn.commit()
-        
-        # Execute a SQL query to get the maximum date in the table
-        query = f"SELECT MAX(tpep_pickup_datetime) FROM {self.table_name}"
-        cursor.execute(query)
-        
-        # Fetch the result
-        last_data = cursor.fetchone()[0]
+            if cursor.fetchone()[0] == 0:
+                # Table doesn't exist, create it
+                query = f"""
+                CREATE TABLE {self.table_name} (
+                    VendorID INT,
+                    tpep_pickup_datetime DATETIME,
+                    tpep_dropoff_datetime DATETIME,
+                    passenger_count FLOAT,
+                    trip_distance FLOAT,
+                    RatecodeID FLOAT,
+                    store_and_fwd_flag VARCHAR(1),
+                    PULocationID INT,
+                    DOLocationID INT,
+                    payment_type INT,
+                    fare_amount FLOAT,
+                    extra FLOAT,
+                    mta_tax FLOAT,
+                    tip_amount FLOAT,
+                    tolls_amount FLOAT,
+                    improvement_surcharge FLOAT,
+                    total_amount FLOAT,
+                    congestion_surcharge FLOAT,
+                    airport_fee FLOAT,
+                    trip_duration_minutes FLOAT,
+                    year INT,
+                    month INT,
+                    day_of_week INT,
+                    day_name VARCHAR(10),
+                    month_name VARCHAR(10),
+                    quarter INT
+                );
+                """
+                cursor.execute(query)
+                self.conn.commit()
+            
+            # Execute a SQL query to get the maximum date in the table
+            query = f"SELECT MAX(tpep_pickup_datetime) FROM {self.table_name}"
+            cursor.execute(query)
+            
+            # Fetch the result
+            last_data = cursor.fetchone()[0]
 
         return last_data
 
@@ -131,13 +133,13 @@ class LoadToAzureSql():
                                                 username=self.username,
                                                 password=self.password,
                                                 table_name=self.table_name)
+                    with self.conn:
+                        self.conn.commit()
                 except Exception as e:
                     # Roll back the transaction (in case of an error)
-                    self.conn.rollback()
+                    with self.conn:
+                        self.conn.rollback()
                     print(f"Error occurred: {e}")
-                finally:
-                    # Close the connection
-                    self.conn.close()
         else:
             # If there is data in the Azure SQL table,
             # load only the blob files that contain data newer than the data in the table
@@ -163,14 +165,14 @@ class LoadToAzureSql():
                                                     username=self.username,
                                                     password=self.password,
                                                     table_name=self.table_name)
+                        with self.conn:
+                            self.conn.commit()
                     except Exception as e:
                         # Roll back the transaction (in case of an error)
-                        self.conn.rollback()
+                        with self.conn:
+                            self.conn.rollback()
                         print(f"Error occurred: {e}")
-                    finally:
-                        # Close the connection
-                        self.conn.close()
                 # If there are no blob files that contain data newer than the data in the table, exit the loop
-                except IndexError:
+                except :
                     print('all data in blob uploaded')
                     break

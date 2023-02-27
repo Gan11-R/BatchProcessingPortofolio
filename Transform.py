@@ -3,6 +3,8 @@ import findspark
 from datetime import datetime, timedelta
 from azure.storage.blob import generate_blob_sas, BlobSasPermissions
 from pyspark.sql.functions import year, month, dayofweek, quarter, date_format, unix_timestamp
+from pyspark.sql.types import DateType
+import os
 
 findspark.init()
 
@@ -78,8 +80,21 @@ class PysparkProcessing():
             f'fs.azure.sas.{container_name}.{account_name}.blob.core.windows.net', sas_i)
 
         print(f"{file_name} loading in process")
+
         # Load the parquet file into a Spark DataFrame
         self.df = self.spark.read.parquet(wasbs_path)
+
+        # Split filename into base name and extension
+        base_name, extension = os.path.splitext(file_name)
+
+        # Split base name to extract year and month
+        file_year, file_month = base_name.split('_')[-1].split('-')
+        file_year, file_month = int(file_year), int(file_month)
+
+        # filter only data that has the year and month that match the file name
+        # thus getting rid of the wrong year and month
+        self.df = self.df.filter((year('tpep_pickup_datetime') == file_year) & (
+            month('tpep_pickup_datetime') == file_month))
 
         print(f"{file_name} loaded in Dataframe")
 
@@ -119,8 +134,8 @@ class PysparkProcessing():
             .withColumn("year", year("tpep_pickup_datetime")) \
             .withColumn("month", month("tpep_pickup_datetime")) \
             .withColumn("day_of_week", dayofweek("tpep_pickup_datetime")) \
-            .withColumn("day_name", date_format("tpep_pickup_datetime", "EEEE")) \
-            .withColumn("month_name", date_format("tpep_pickup_datetime", "MMMM")) \
+            .withColumn("day_name", date_format("tpep_pickup_datetime", "EEEE").cast(DateType())) \
+            .withColumn("month_name", date_format("tpep_pickup_datetime", "MMMM").cast(DateType())) \
             .withColumn("quarter", quarter("tpep_pickup_datetime"))
 
         print("Transformed")
