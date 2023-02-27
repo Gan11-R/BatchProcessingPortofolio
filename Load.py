@@ -40,13 +40,11 @@ class LoadToAzureSql():
         """
 
         # Connect to the database
-        self.conn = pymssql.connect(self.server, self.username,
-                               self.password, self.database)
-        
-        with self.conn:
-            self.conn.autocommit(False)
+        with pymssql.connect(self.server, self.username,
+                               self.password, self.database) as conn:
+            conn.autocommit(False)
             # Create a cursor
-            cursor = self.conn.cursor()
+            cursor = conn.cursor()
 
             # Check if the table exists
             query = f"SELECT COUNT(*) FROM sys.tables WHERE name = '{self.table_name}'"
@@ -84,7 +82,7 @@ class LoadToAzureSql():
                 );
                 """
                 cursor.execute(query)
-                self.conn.commit()
+                conn.commit()
             
             # Execute a SQL query to get the maximum date in the table
             query = f"SELECT MAX(tpep_pickup_datetime) FROM {self.table_name}"
@@ -95,6 +93,16 @@ class LoadToAzureSql():
 
         return last_data
 
+    def commit(self):
+        with pymssql.connect(self.server, self.username,
+                               self.password, self.database) as conn:
+            conn.commit()
+
+    def rollback(self):
+        with pymssql.connect(self.server, self.username,
+                               self.password, self.database) as conn:
+            conn.rollback()
+    
     def load_blob_data_to_azure(self, blob_list, blob_account_name, blob_container_name, blob_account_key):
         """
         Load data from a list of Parquet files stored in Azure Blob Storage to an Azure SQL database.
@@ -133,12 +141,10 @@ class LoadToAzureSql():
                                                 username=self.username,
                                                 password=self.password,
                                                 table_name=self.table_name)
-                    with self.conn:
-                        self.conn.commit()
+                    self.commit()
                 except Exception as e:
                     # Roll back the transaction (in case of an error)
-                    with self.conn:
-                        self.conn.rollback()
+                    self.rollback()
                     print(f"Error occurred: {e}")
         else:
             # If there is data in the Azure SQL table,
@@ -165,12 +171,10 @@ class LoadToAzureSql():
                                                     username=self.username,
                                                     password=self.password,
                                                     table_name=self.table_name)
-                        with self.conn:
-                            self.conn.commit()
+                        self.commit()
                     except Exception as e:
                         # Roll back the transaction (in case of an error)
-                        with self.conn:
-                            self.conn.rollback()
+                        self.rollback()
                         print(f"Error occurred: {e}")
                 # If there are no blob files that contain data newer than the data in the table, exit the loop
                 except :

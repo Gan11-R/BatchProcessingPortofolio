@@ -3,7 +3,6 @@ import findspark
 from datetime import datetime, timedelta
 from azure.storage.blob import generate_blob_sas, BlobSasPermissions
 from pyspark.sql.functions import year, month, dayofweek, quarter, date_format, unix_timestamp
-from pyspark.sql.types import DateType
 import os
 
 findspark.init()
@@ -134,8 +133,8 @@ class PysparkProcessing():
             .withColumn("year", year("tpep_pickup_datetime")) \
             .withColumn("month", month("tpep_pickup_datetime")) \
             .withColumn("day_of_week", dayofweek("tpep_pickup_datetime")) \
-            .withColumn("day_name", date_format("tpep_pickup_datetime", "EEEE").cast(DateType())) \
-            .withColumn("month_name", date_format("tpep_pickup_datetime", "MMMM").cast(DateType())) \
+            .withColumn("day_name", date_format("tpep_pickup_datetime", "EEEE")) \
+            .withColumn("month_name", date_format("tpep_pickup_datetime", "MMMM")) \
             .withColumn("quarter", quarter("tpep_pickup_datetime"))
 
         print("Transformed")
