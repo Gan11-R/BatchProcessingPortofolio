@@ -114,43 +114,45 @@ class LoadToAzureSql():
         None
         """
         while True:
-            try:
-                # Check if there is any data in the Azure SQL table
-                if self.last_data_in_azure_sql() == None:
-                    # If there is no data, set file to insert is first file in blob storage
-                    file_not_inserted = blob_list[0]
-                else:
-                    # Get the maximum date in the Azure SQL table
-                    last_data = self.last_data_in_azure_sql()
-                    # Extract the year and month from the maximum date
-                    year_month = last_data.strftime('%Y-%m')
-                    # convert month year to datetime so it can be add one month
-                    year_month_date = datetime.strptime(year_month, "%Y-%m").date()
+            # Check if there is any data in the Azure SQL table
+            if self.last_data_in_azure_sql() == None:
+                # If there is no data, set file to insert is first file in blob storage
+                file_not_inserted = blob_list[0]
+            else:
+                # Get the maximum date in the Azure SQL table
+                last_data = self.last_data_in_azure_sql()
+                # Extract the year and month from the maximum date
+                year_month = last_data.strftime('%Y-%m')
+                # convert month year to datetime so it can be add one month
+                year_month_date = datetime.strptime(year_month, "%Y-%m").date()
 
-                    # add a month so that you can get the url for the next month in the last file on the blob
-                    new_date = year_month_date + relativedelta(months=1)
-                    # convert back into string
-                    year_month_str = new_date.strftime("%Y-%m")
-                    # Construct the name of the blob file that contains data newer than the data in the table
-                    file_not_inserted = f"yellow_tripdata_{year_month_str}.parquet"
-
-                # Load the data from the blob file to a PySpark DataFrame
-                self.pyspark.load_parquet_from_blob(account_name=blob_account_name,
-                                                    container_name=blob_container_name,
-                                                    blob_account_key=blob_account_key,
-                                                    file_name=file_not_inserted)
-                # Preprocess the PySpark DataFrame
-                self.pyspark.df_preprocessing()
-                try:
-                    # Load the preprocessed PySpark DataFrame to the Azure SQL table
-                    self.pyspark.load_to_azure_sql(server=self.server,
-                                                   database=self.database,
-                                                   username=self.username,
-                                                   password=self.password,
-                                                   table_name=self.table_name)
-                except Exception as e:
-                    print(f"Error occurred: {e}")
+                # add a month so that you can get the url for the next month in the last file on the blob
+                new_date = year_month_date + relativedelta(months=1)
+                # convert back into string
+                year_month_str = new_date.strftime("%Y-%m")
+                # Construct the name of the blob file that contains data newer than the data in the table
+                file_not_inserted = f"yellow_tripdata_{year_month_str}.parquet"
+                
             # If there are no blob files that contain data newer than the data in the table, exit the loop
-            except Exception as e:
-                print(f'all data in blob uploaded, {0}')
+            if file_not_inserted not in blob_list:
+                print("all data upploaded")
                 break
+
+            # Load the data from the blob file to a PySpark DataFrame
+            self.pyspark.load_parquet_from_blob(account_name=blob_account_name,
+                                                container_name=blob_container_name,
+                                                blob_account_key=blob_account_key,
+                                                file_name=file_not_inserted)
+            # Preprocess the PySpark DataFrame
+            self.pyspark.df_preprocessing()
+            try:
+                # Load the preprocessed PySpark DataFrame to the Azure SQL table
+                self.pyspark.load_to_azure_sql(server=self.server,
+                                               database=self.database,
+                                               username=self.username,
+                                               password=self.password,
+                                               table_name=self.table_name)
+            except Exception as e:
+                print(f"Error occurred: {e}")
+                break
+            # If there are no blob files that contain data newer than the data in the table, exit the loop
