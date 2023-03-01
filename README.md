@@ -50,14 +50,12 @@ Additional column after the transformation process:
 
 Transformation process with pyspark using [Transform.py.](https://github.com/Gan11-R/BatchProcessingPortofolio/blob/main/Transform.py)
 
-Then the data that has been transformed is uploaded to the Azure SQL database. **The upload process will only add data that is not yet in the database**, so there will be no duplication of data. This process uses [Load.py.](https://github.com/Gan11-R/BatchProcessingPortofolio/blob/main/Load.py)
+### Load
 
-### Visualization
-Data visualization using google data studio which retrieves data from azure sql database. The dashboard can be seen in the following [link](url).
+Then the data that has been transformed is uploaded to the Azure SQL database. **The upload process will only add data that is not yet in the database**, so there will be no duplication of data. This process uses [Load.py.](https://github.com/Gan11-R/BatchProcessingPortofolio/blob/main/Load.py)
 
 ### Scheduling
 Python code is run once a month on day 11 using file [taxi_dag.py.](https://github.com/Gan11-R/BatchProcessingPortofolio/blob/main/taxi_dag.py)
 Scheduling using apache airflow which is installed locally due to lack of resources, so the data may not be updated.
-
 
 *NB: Python code is written based on OOP best practices
