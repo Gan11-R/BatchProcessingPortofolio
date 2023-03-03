@@ -25,7 +25,6 @@ This pipeline is built using the following technologies:
 - **Apache Airflow** - to schedule and orchestrate the data engineering pipeline
 -   **Azure Blob Storage** - to store the parquet data files in a scalable and cost-effective manner.
 - **Azure SQL Database** - to store and manage the processed data from the Yellow Taxi Trip Records dataset in a structured and efficient manner after transformed with pyspark.
--   **Google Data Studio** - to create visualizations and reports based on the data from the Yellow Taxi Trip Records dataset stored in Azure SQL Database
 
 ## Project Structure
 ### Ingesting
